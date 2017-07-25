@@ -44,7 +44,7 @@ def main(argv):
     #    os.makedirs(FLAGS.checkpoint_dirs)
     if not os.path.exists(FLAGS.save_dir):
         os.makedirs(FLAGS.save_dir)
-    image_dir = os.path.join(FLAGS.save_dir, 'image')
+    image_dir = os.path.join(FLAGS.save_dir, 'images')
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
 
