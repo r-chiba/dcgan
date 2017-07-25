@@ -30,6 +30,7 @@ class GAN:
         self.beta1 = flags.beta1
         self.savedir = flags.save_dir
         self.training = flags.train
+        self.n_epoch = flags.n_epoch
 
     def generator(self, z, reuse=False, training=True):
         h, w = self.output_height, self.output_width
@@ -177,12 +178,12 @@ class GAN:
 
         self.sess.run(tf.initialize_all_variables())
 
-        step = -1
+        step = 0
+        epoch = 1
         start = time.time()
-        while True:
-            step += 1
+        while epoch <= self.n_epoch:
 
-            batch_images, batch_labels = batch_generator()
+            batch_images, batch_labels, last_batch = batch_generator()
             batch_z = np.random.uniform(-1., 1., [self.batch_size, self.z_dim]).astype(np.float32)
 
             _, g_loss = self.sess.run([self.g_optimizer, self.g_loss], 
@@ -195,8 +196,8 @@ class GAN:
                 self.writer.add_summary(summary, step)
 
             if step % 100 == 0:
-                print("%6d: loss(D)=%.4e, loss(G)=%.4e; time/step=%.2f sec" %
-                        (step, d_loss, g_loss, time.time()-start))
+                print("epoch %d(%6d): loss(D)=%.4e, loss(G)=%.4e; time/step=%.2f sec" %
+                        (epoch, step, d_loss, g_loss, time.time()-start))
                 start = time.time()
 
             if step % 500 == 0:
@@ -213,3 +214,6 @@ class GAN:
                     tile_image(gimg1)*255. + 128.)
                 cv2.imwrite(os.path.join(self.savedir, "images", "img_%d_fake2.png" % step), 
                     tile_image(gimg2)*255. + 128.)
+
+            step += 1
+            if last_batch == True: epoch += 1

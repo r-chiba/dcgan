@@ -13,12 +13,23 @@ class MnistBatchGenerator:
         self.image = mnist.train.images
         self.image = np.reshape(self.image, [len(self.image), 28, 28])
         self.label = mnist.train.labels
+        self.batch_idx = 0
+        self.rand_idx = np.random.permutation(len(self.image))
 
     def __call__(self, color=True):
-        idx = np.random.randint(0, len(self.image)-1, self.batch_size)
+        idx = self.rand_idx[self.batch_idx*self.batch_size : (self.batch_idx+1)*self.batch_size]
+
+        if (self.batch_idx+2)*self.batch_size > len(self.image)+1:
+            last_batch = True
+            self.batch_idx = 0
+            self.rand_idx = np.random.permutation(len(self.image))
+        else:
+            last_batch = False
+            self.batch_idx += 1
+
         x, t = self.image[idx], self.label[idx]
         x = (x - 0.5) / 1.0
         if color == True:
             x = np.expand_dims(x, axis=3)
             x = np.tile(x, (1, 1, 3))
-        return x, t
+        return x, t, last_batch
