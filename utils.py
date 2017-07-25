@@ -33,7 +33,7 @@ def conv2d(input_, output_dim, kh=5, kw=5, sth=1, stw=1, sd=0.02, name='conv2d',
 
 def deconv2d(input_, output_shape, kh=5, kw=5, sth=1, stw=1, sd=0.02, name='deconv2d', with_w=False):
     with tf.variable_scope(name):
-        w = tf.get_variable('w', [kh, kw, output_shape()[-1], input_.get_shape()[-1]],
+        w = tf.get_variable('w', [kh, kw, output_shape[-1], input_.get_shape()[-1]],
                 initializer=tf.truncated_normal_initializer(stddev=sd))
         deconv = tf.nn.conv2d_transpose(input_, w, output_shape=output_shape,
                     strides=[1, sth, stw, 1])
