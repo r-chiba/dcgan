@@ -43,8 +43,8 @@ class Convolution2d:
 
 
     def __call__(self, x):
-        ret = tf.nn.conv2d(x, w, strides=[1, self.sth, self.stw, 1], padding='SAME')
-        ret = tf.reshape(tf.nn.bias_add(ret, bias), ret.get_shape())
+        ret = tf.nn.conv2d(x, self.w, strides=[1, self.sth, self.stw, 1], padding='SAME')
+        ret = tf.reshape(tf.nn.bias_add(ret, self.b), ret.get_shape())
         return ret
      
 
@@ -81,9 +81,9 @@ class BatchNormalization:
         self.decay = decay
         self.name = name
 
-    def __call__(self, x, train=True):
+    def __call__(self, x, train=True, reuse=False):
         return tf.contrib.layers.batch_norm(x, decay=self.decay, updates_collections=None,
-            epsilon=self.epsilon, scale=True, is_training=train, scope=self.name)
+            epsilon=self.epsilon, scale=True, is_training=train, reuse=reuse, scope=self.name)
 
 
 #def linear(input_, output_size, vs_name='Linear', sd=0.02, bias_start=0.0, with_w=False):

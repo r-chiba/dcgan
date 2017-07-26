@@ -12,8 +12,9 @@ import cv2
 from utils import *
 
 
-class Genarator:
-    def __init__(self, batch_size, in_d, out_h, out_w, out_c, dim, name='generator', reuse=False):
+class Generator:
+    #def __init__(self, batch_size, in_d, out_h, out_w, out_c, dim, name='generator', reuse=False):
+    def __init__(self, batch_size, in_d, out_h, out_w, out_c, dim, name='generator'):
         self.batch_size = batch_size
         self.dim = dim
         h2, w2 = pad_out_size_same(out_h, 2), pad_out_size_same(out_w, 2)
@@ -23,50 +24,51 @@ class Genarator:
         self.reshape = (h16, w16)
 
         with tf.variable_scope(name) as scope:
-            if reuse == True:
-                scope.reuse_variables()
+            #if reuse == True:
+            #    scope.reuse_variables()
 
             self.linear = Linear(in_d, self.dim*8*h16*w16, name='g_h0')
 
             self.deconv1 = Deconvolution2d(self.dim*8, [self.batch_size, h8, w8, self.dim*4], sth=2, stw=2, name='g_h1')
-            self.bn1 = BatchNormalization()
+            self.bn1 = BatchNormalization(name='g_bn1')
 
             self.deconv2 = Deconvolution2d(self.dim*4, [self.batch_size, h4, w4, self.dim*2], sth=2, stw=2, name='g_h2')
-            self.bn2 = BatchNormalization()
+            self.bn2 = BatchNormalization(name='g_bn2')
             
             self.deconv3 = Deconvolution2d(self.dim*2, [self.batch_size, h2, w2, self.dim], sth=2, stw=2, name='g_h3')
-            self.bn3 = BatchNormalization()
+            self.bn3 = BatchNormalization(name='g_bn3')
 
-            self.deconv4 = Deconvolution2d(self.dim, [self.batch_size, h, w, out_c], sth=2, stw=2, name='g_h4')
-            self.bn4 = BatchNormalization()
+            self.deconv4 = Deconvolution2d(self.dim, [self.batch_size, out_h, out_w, out_c], sth=2, stw=2, name='g_h4')
+            self.bn4 = BatchNormalization(name='g_bn4')
 
 
-    def __call__(self, z, train=True):
+    def __call__(self, z, train=True, reuse=False):
         h = self.linear(z)
         h = tf.nn.relu(h)
         h = tf.reshape(h, [self.batch_size, self.reshape[0], self.reshape[1], self.dim*8])
 
         h = self.deconv1(h)
-        h = self.bn1(h, train=train)
+        h = self.bn1(h, train=train, reuse=reuse)
         h = tf.nn.relu(h)
 
         h = self.deconv2(h)
-        h = self.bn2(h, train=train)
+        h = self.bn2(h, train=train, reuse=reuse)
         h = tf.nn.relu(h)
 
         h = self.deconv3(h)
-        h = self.bn3(h, train=train)
+        h = self.bn3(h, train=train, reuse=reuse)
         h = tf.nn.relu(h)
 
         h = self.deconv4(h)
-        h = self.bn4(h, train=train)
+        h = self.bn4(h, train=train, reuse=reuse)
         h = tf.nn.relu(h)
 
         return tf.nn.tanh(h)
 
 
 class Discriminator:
-    def __init__(self, batch_size, in_c, in_h, in_w, dim, name='Discriminator', reuse=False):
+    #def __init__(self, batch_size, in_c, in_h, in_w, dim, name='Discriminator', reuse=False):
+    def __init__(self, batch_size, in_c, in_h, in_w, dim, name='Discriminator'):
         self.batch_size = batch_size
         self.dim = dim
         h2, w2 = pad_out_size_same(in_h, 2), pad_out_size_same(in_w, 2)
@@ -74,34 +76,35 @@ class Discriminator:
         h8, w8 = pad_out_size_same(h4, 2), pad_out_size_same(w4, 2)
 
         with tf.variable_scope(name) as scope:
-            if reuse == True:
-                scope.reuse_variables()
+            #if reuse == True:
+            #    scope.reuse_variables()
 
             self.conv1 = Convolution2d(in_c, self.dim*2, sth=2, stw=2, name='d_h0')
-            self.bn1 = BatchNormalization()
+            self.bn1 = BatchNormalization(name='d_bn0')
 
             self.conv2 = Convolution2d(self.dim*2, self.dim*4, sth=2, stw=2, name='d_h1')
-            self.bn2 = BatchNormalization()
+            self.bn2 = BatchNormalization(name='d_bn1')
 
             self.conv3 = Convolution2d(self.dim*4, self.dim*8, sth=2, stw=2, name='d_h2')
-            self.bn3 = BatchNormalization()
+            self.bn3 = BatchNormalization(name='d_bn2')
 
             self.linear = Linear(h8*w8*self.dim*8, 1, name='d_h3')
 
 
-    def __call__(self, x, train=True):
+    def __call__(self, x, train=True, reuse=False):
         h = self.conv1(x)
-        h = self.bn1(h)
+        h = self.bn1(h, reuse=reuse)
         h = lrelu(h)
 
-        h = self.conv2(x)
-        h = self.bn2(h)
+        h = self.conv2(h)
+        h = self.bn2(h, reuse=reuse)
         h = lrelu(h)
 
-        h = self.conv3(x)
-        h = self.bn3(h)
+        h = self.conv3(h)
+        h = self.bn3(h, reuse=reuse)
         h = lrelu(h)
 
+        h = tf.reshape(h, [self.batch_size, -1])
         logit = self.linear(h)
 
         return logit
@@ -125,7 +128,7 @@ class GAN:
         self.training = flags.train
         self.n_epoch = flags.n_epoch
 
-        self.Gen = Generator(self.batch_size, self.n_channel, self.output_height, self.output_width, self.n_channel, self.g_dim)
+        self.Gen = Generator(self.batch_size, self.z_dim, self.output_height, self.output_width, self.n_channel, self.g_dim)
         self.Dis = Discriminator(self.batch_size, self.n_channel, self.output_height, self.output_width, self.d_dim)
         #self.Dis_real = Discriminator(self.batch_size, self.n_channel, self.output_height, self.output_width, self.d_dim)
         #self.Dis_fake = Discriminator(self.batch_size, self.n_channel, self.output_height, self.output_width, self.d_dim, reuse=True)
@@ -134,7 +137,7 @@ class GAN:
         self.x_real = tf.placeholder(tf.float32, 
             [self.batch_size, self.input_height, self.input_width, self.n_channel], name='x')
         self.x_fake = self.Gen(self.z)
-        self.x_sample = self.Gen(self.z, training=False)
+        self.x_sample = self.Gen(self.z, train=False, reuse=True)
         self.d_real = self.Dis(self.x_real)
         self.d_fake = self.Dis(self.x_fake, reuse=True)
 

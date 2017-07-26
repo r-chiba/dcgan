@@ -54,7 +54,7 @@ def main(argv):
 
     with tf.Session(config=config) as sess:
         dcgan = GAN(sess, FLAGS)
-        dcgan.build_model()
+        #dcgan.build_model()
         batch = MnistBatchGenerator(batch_size=FLAGS.batch_size)
         if FLAGS.train:
             dcgan.train(batch_generator=batch)
