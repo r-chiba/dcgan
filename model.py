@@ -12,8 +12,6 @@ import cv2
 from utils import *
 
 class GAN:
-    #def __init__(self, sess, batch_size, input_height, input_width, n_channel, 
-    #            output_height, output_width, z_dim, g_dim, d_dim, dataset_name):
     def __init__(self, sess, flags):
         self.sess = sess
         self.batch_size = flags.batch_size
@@ -26,7 +24,6 @@ class GAN:
         self.g_dim = flags.g_dim
         self.d_dim = flags.d_dim
         self.learning_rate = flags.learning_rate
-        #self.momentum = flags.momentum
         self.beta1 = flags.beta1
         self.savedir = flags.save_dir
         self.training = flags.train
@@ -155,12 +152,6 @@ class GAN:
         self.g_optimizer = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1).minimize(
             self.g_loss, var_list=self.g_vars)
 
-        for x in self.d_vars:
-            print(x.name)
-        print('-----')
-        for x in self.g_vars:
-            print(x.name)
-
         tf.scalar_summary('d_loss_real', self.d_loss_real)
         tf.scalar_summary('d_loss_fake', self.d_loss_fake)
         tf.scalar_summary('d_loss', self.d_loss)
@@ -207,19 +198,13 @@ class GAN:
                 start = time.time()
 
             if step % 500 == 0:
-                z1 = np.random.uniform(-1, 1, [self.batch_size, self.z_dim])
-                z2 = np.random.uniform(-1, 1, [self.z_dim])
-                z2 = np.expand_dims(z2, axis=0)
-                z2 = np.repeat(z2, repeats=self.batch_size, axis=0)
+                z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim])
 
-                gimg1 = self.sess.run(self.x_sample, feed_dict={self.z: z1})
-                gimg2 = self.sess.run(self.x_sample, feed_dict={self.z: z2})
+                gimg = self.sess.run(self.x_sample, feed_dict={self.z: z})
                 cv2.imwrite(os.path.join(self.savedir, "images", "img_%d_real.png" % step), 
                     tile_image(x_real)*255. + 128.)
                 cv2.imwrite(os.path.join(self.savedir, "images", "img_%d_fake1.png" % step), 
                     tile_image(gimg1)*255. + 128.)
-                cv2.imwrite(os.path.join(self.savedir, "images", "img_%d_fake2.png" % step), 
-                    tile_image(gimg2)*255. + 128.)
 
             step += 1
             if last_batch == True: epoch += 1

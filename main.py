@@ -15,10 +15,6 @@ flags.DEFINE_float('learning_rate', 0.0002, 'learning rate for adam')
 flags.DEFINE_float('beta1', 0.5, 'beta1 of adam')
 flags.DEFINE_integer('n_epoch', 30, 'number of epoch')
 flags.DEFINE_integer('batch_size', 64, 'batch size')
-#flags.DEFINE_integer('input_height', 28, 'height of input image')
-#flags.DEFINE_integer('input_width', None, 'width of input image')
-#flags.DEFINE_integer('output_height', 28, 'height of output image')
-#flags.DEFINE_integer('output_width', None, 'width of output image')
 flags.DEFINE_string('dataset_name', 'mnist', 'path to dataset')
 flags.DEFINE_string('save_dir', 'save', 'directory to save the image samples')
 flags.DEFINE_boolean('train', True, 'True for training, False for testing')
@@ -26,10 +22,6 @@ flags.DEFINE_boolean('train', True, 'True for training, False for testing')
 FLAGS = flags.FLAGS
 
 def main(argv):
-    #if FLAGS.input_width is None:
-    #    FLAGS.input_width = FLAGS.input_height
-    #if FLAGS.output_width is None:
-    #    FLAGS.output_width = FLAGS.output_height
     if FLAGS.dataset_name == 'mnist':
         FLAGS.input_width = FLAGS.input_height = \
             FLAGS.output_width = FLAGS.output_height = 28
