@@ -38,7 +38,7 @@ def deconv2d(input_, output_shape, kh=5, kw=5, sth=1, stw=1, sd=0.02, name='deco
         deconv = tf.nn.conv2d_transpose(input_, w, output_shape=output_shape,
                     strides=[1, sth, stw, 1])
         bias = tf.get_variable('bias', [output_shape[-1]], initializer=tf.constant_initializer(0.0))
-        conv = tf.reshape(tf.nn.bias_add(deconv, bias), deconv.get_shape())
+        deconv = tf.reshape(tf.nn.bias_add(deconv, bias), deconv.get_shape())
         if with_w == True:
             return deconv, w, bias
         else:
