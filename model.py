@@ -155,6 +155,12 @@ class GAN:
         self.g_optimizer = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1).minimize(
             self.g_loss, var_list=self.g_vars)
 
+        for x in self.d_vars:
+            print(x.name)
+        print('-----')
+        for x in self.g_vars:
+            print(x.name)
+
         tf.scalar_summary('d_loss_real', self.d_loss_real)
         tf.scalar_summary('d_loss_fake', self.d_loss_fake)
         tf.scalar_summary('d_loss', self.d_loss)
@@ -196,7 +202,7 @@ class GAN:
                 self.writer.add_summary(summary, step)
 
             if step % 100 == 0:
-                print("epoch %d(%6d): loss(D)=%.4e, loss(G)=%.4e; time/step=%.2f sec" %
+                print("epoch %3d(%6d): loss(D)=%.4e, loss(G)=%.4e; time/step=%.2f sec" %
                         (epoch, step, d_loss, g_loss, time.time()-start))
                 start = time.time()
 
