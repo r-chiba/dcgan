@@ -198,13 +198,17 @@ class GAN:
                 start = time.time()
 
             if step % 500 == 0:
-                z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim])
+                img_real = tile_image(x_real) * 255. + 127.5
+                img_real = cv2.cvtColor(img_real, cv2.COLOR_RGB2BGR)
 
-                gimg = self.sess.run(self.x_sample, feed_dict={self.z: z})
+                z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim])
+                img_fake = self.sess.run(self.x_sample, feed_dict={self.z: z})
+                img_fake = tile_image(x_fake) * 255. + 127.5
+                img_fake = cv2.cvtColor(img_fake, cv2.COLOR_RGB2BGR)
                 cv2.imwrite(os.path.join(self.savedir, "images", "img_%d_real.png" % step), 
-                    tile_image(x_real)*255. + 128.)
+                    img_real)
                 cv2.imwrite(os.path.join(self.savedir, "images", "img_%d_fake1.png" % step), 
-                    tile_image(gimg1)*255. + 128.)
+                    img_fake)
 
             step += 1
             if last_batch == True: epoch += 1

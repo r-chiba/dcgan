@@ -6,6 +6,8 @@ import cPickle
 from sklearn.preprocessing import OneHotEncoder
 import numpy as np
 import tensorflow as tf
+import glob
+import cv2
 
 class MnistBatchGenerator:
     def __init__(self, batch_size):
@@ -47,9 +49,12 @@ class Cifar10BatchGenerator:
             if not os.path.exists(subset_path):
                 raise ValueError('File %s does not exist.'%subset_path)
             data = self.unpickle(subset_path)
-            images = [x.astype(np.float32) / 255. - .5 for x in data['data']]
-            images = [x.reshape(3, 32, 32).transpose(1, 2, 0)
-                for x in images]
+            images = data['data']
+            images = images.astype(np.float32) / 255. - .5
+            images = images.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1)
+            #images = [x.astype(np.float32) / 255. - .5 for x in data]
+            #images = [x.reshape(3, 32, 32).transpose(1, 2, 0)
+            #    for x in images]
             if self.image is None:
                 self.image = images
             else:
@@ -98,3 +103,35 @@ class Cifar10BatchGenerator:
         encoder = OneHotEncoder(n_values=max(x)+1)
         x = encoder.fit_transform(x).toarray()
         return x
+
+class CelebABatchGenerator:
+    def __init__(self, dataset_path, batch_size):
+        self.batch_size = batch_size
+        self.image = None
+
+        files = glob.glob(os.path.join(dataset_path, '*.jpg'))[:100000]
+        images = [cv2.imread(file) for file in files]
+        images = [cv2.cvtColor(image, cv2.COLOR_BGR2RGB) for image in images]
+        images = [cv2.resize(image, (64, 64)) for image in images]
+        images = [image.astype(np.float32) / 255. - .5 for image in images]
+        #self.image = np.asarray([image.transpose(1, 2, 0) for image in images])
+        self.image = np.asarray(images)
+
+        self.batch_idx = 0
+        self.rand_idx = np.random.permutation(len(self.image))
+        print(len(self.image))
+
+    def __call__(self, color=True):
+        idx = self.rand_idx[self.batch_idx*self.batch_size : (self.batch_idx+1)*self.batch_size]
+
+        if (self.batch_idx+2)*self.batch_size > len(self.image)+1:
+            last_batch = True
+            self.batch_idx = 0
+            self.rand_idx = np.random.permutation(len(self.image))
+        else:
+            last_batch = False
+            self.batch_idx += 1
+
+        x = self.image[idx]
+
+        return x, None, last_batch

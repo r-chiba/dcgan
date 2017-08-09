@@ -31,6 +31,11 @@ def main(argv):
             FLAGS.output_width = FLAGS.output_height = 32
         batch = Cifar10BatchGenerator('/home/chiba/data/cifar10/cifar-10-batches-py',
             batch_size=FLAGS.batch_size)
+    elif FLAGS.dataset_name == 'celeba':
+        FLAGS.input_width = FLAGS.input_height = \
+            FLAGS.output_width = FLAGS.output_height = 64
+        batch = CelebABatchGenerator('/home/chiba/data/celeba/img_align_celeba/',
+            batch_size=FLAGS.batch_size)
     else:
         raise ValueError('Dataset %s is unsupported.'%FLAGS.dataset_name)
 
