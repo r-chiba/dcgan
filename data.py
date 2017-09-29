@@ -242,7 +242,7 @@ class CelebADataset:
 
         if self.images is None:
             print('load images...')
-            files = glob.glob(os.path.join(dataset_path, '*.jpg'))[:10000]
+            files = glob.glob(os.path.join(dataset_path, '*.jpg'))
             images = [cv2.imread(file) for file in files]
             images = [cv2.cvtColor(image, cv2.COLOR_BGR2RGB) for image in images]
             images = [cv2.resize(image, (64, 64)) for image in images]
