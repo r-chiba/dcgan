@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import division
 
 import os
+import sys
 import time
 import math
 import glob
@@ -212,3 +213,6 @@ class GAN:
 
             step += 1
             if last_batch == True: epoch += 1
+
+            sys.stdout.flush()
+            sys.stderr.flush()
