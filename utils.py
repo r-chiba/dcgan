@@ -88,7 +88,8 @@ def blur(batch):
     n_channel = batch.get_shape()[-1]
     #filter = np.repeat(filter_oc, n_channel, axis=2)
     #filter = np.asarray([filter_oc]*n_channel)
-    blured = tf.nn.depthwise_conv2d(batch, filter,
+    blured = tf.nn.depthwise_conv2d(batch,
+        filter if batch.get_shape().as_list()[-1] == 3 else filter_oc,
         strides=[1, 1, 1, 1], padding='SAME')
     return blured
 
@@ -117,6 +118,6 @@ def laplacian_pyramid_loss(batch1, batch2, level):
     lp2 = get_laplacian_pyramid(batch2, level)
     ret = 0.
     for i in xrange(level):
-        #ret += 2**(-2*(i+1)) * tf.reduce_mean(tf.abs(lp1[i] - lp2[i]))
-        ret += 2**(-(i+1)) * tf.reduce_mean(tf.abs(lp1[i] - lp2[i]))
+        ret += 2**(-2*(i+1)) * tf.reduce_mean(tf.abs(lp1[i] - lp2[i]))
+        #ret += 2**(-(i+1)) * tf.reduce_mean(tf.abs(lp1[i] - lp2[i]))
     return ret

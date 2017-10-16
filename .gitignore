@@ -1,4 +1,6 @@
 *.pyc
-save
-save_mnist
-MNIST_data
+*.pkl
+tmp.py
+*save*/
+MNIST_data/
+glo_gmmn/
