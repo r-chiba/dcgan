@@ -22,10 +22,13 @@ class MnistDataset:
         self.train_images = mnist.train.images
         self.train_images = np.reshape(self.train_images, [len(self.train_images), 28, 28, 1])
         self.train_labels = mnist.train.labels
+        self.train_size = len(self.train_images)
         self.test_images = mnist.test.images
         self.test_images = np.reshape(self.test_images, [len(self.test_images), 28, 28, 1])
         self.test_labels = mnist.test.labels
         self.images = np.concatenate((self.train_images, self.test_images))
+        self.labels = np.concatenate((self.train_labels, self.test_labels))
+
         if code_init == None:
             self.codes = None
         elif code_init == 'gaussian':
@@ -40,12 +43,11 @@ class MnistDataset:
             print('done.')
 
         if self.codes is not None:
-            self.codes = np.asarray([code / np.linalg.norm(code, 2) for code in self.codes])
+            self.codes /= np.linalg.norm(self.codes, axis=1, keepdims=True)
 
         if color == True:
             self.images = np.asarray([np.tile(image(1, 1, 3)) for image in self.images])
 
-        self.train_size = len(self.train_images)
         if self.codes is not None:
             self.train_codes = self.codes[:self.train_size]
             self.test_codes = self.codes[self.train_size:]
@@ -117,7 +119,6 @@ class Cifar10Dataset:
 
             data = self._unpickle(subset_path)
             images = data['data']
-            #images = images.astype(np.float32) / 255. - .5
             images = images.astype(np.float32) / 255.
             images = images.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1)
 
@@ -145,7 +146,6 @@ class Cifar10Dataset:
 
         data = self._unpickle(subset_path)
         images = data['data']
-        #images = images.astype(np.float32) / 255. - .5
         images = images.astype(np.float32) / 255.
         images = images.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1)
 
@@ -167,7 +167,7 @@ class Cifar10Dataset:
             print('done.')
         
         if self.codes is not None:
-            self.codes = np.asarray([code / np.linalg.norm(code, 2) for code in self.codes])
+            self.codes /= np.linalg.norm(self.codes, axis=1, keepdims=True)
 
         self.train_size = 50000
         self.train_images = self.images[:self.train_size]
@@ -253,7 +253,6 @@ class CelebADataset:
             images = [cv2.imread(file) for file in files]
             images = [cv2.cvtColor(image, cv2.COLOR_BGR2RGB) for image in images]
             images = [cv2.resize(image, (64, 64)) for image in images]
-            #images = [image.astype(np.float32) / 255. - .5 for image in images]
             images = [image.astype(np.float32) / 255. for image in images]
             self.images = np.asarray(images)
             print('done.')
@@ -274,7 +273,6 @@ class CelebADataset:
         
         if self.codes is not None:
             self.codes = self.codes / np.linalg.norm(self.codes, axis=1, keepdims=True)
-            self.codes = np.asarray([code / np.linalg.norm(code, 2) for code in self.codes])
 
         self.train_size = int(0.9*len(self.images))
         self.train_images = self.images[:self.train_size]

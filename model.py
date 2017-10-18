@@ -44,8 +44,6 @@ class GAN:
                 scope.reuse_variables()
 
             h0 = linear(z, self.g_dim*8*ht16*wh16, 'h0', with_w=False)
-            #h0 = tf.contrib.layers.batch_norm(h0, decay=0.9,
-            #    updates_collections=None, epsilon=1e-5, scale=True, is_training=training)
             h0 = tf.nn.relu(h0)
             h0 = tf.reshape(h0, [self.batch_size, ht16, wh16, self.g_dim*8])
 
@@ -69,7 +67,7 @@ class GAN:
 
             h4 = deconv2d(h3, [self.batch_size, ht, wh, self.n_channel], 
                 sth=2, stw=2, name='h4', with_w=False)
-            h4 = tf.nn.tanh(h4)
+            h4 = tf.nn.sigmoid(h4)
 
             return h4
 
@@ -99,6 +97,7 @@ class GAN:
             h3 = lrelu(h3)
 
             h4 = linear(tf.reshape(h3, [self.batch_size, -1]), 1, 'h4', with_w=False)
+            h4 = tf.nn.sigmoid(h4)
 
             return h4
 
@@ -143,7 +142,7 @@ class GAN:
 
         self.sess.run(tf.initialize_all_variables())
 
-        step = 0
+        step = 1
         epoch = 1
         start = time.time()
         while epoch <= self.n_epoch:
@@ -164,12 +163,12 @@ class GAN:
                 start = time.time()
 
             if step % 500 == 0:
-                img_real = tile_image(x_real) * 255. + 127.5
+                img_real = tile_image(x_real) * 255.
                 img_real = cv2.cvtColor(img_real, cv2.COLOR_RGB2BGR)
 
                 z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim])
                 img_fake = self.sess.run(self.x_sample, feed_dict={self.z: z})
-                img_fake = tile_image(x_fake) * 255. + 127.5
+                img_fake = tile_image(x_fake) * 255.
                 img_fake = cv2.cvtColor(img_fake, cv2.COLOR_RGB2BGR)
                 cv2.imwrite(os.path.join(self.image_dir, "img_%d_real.png" % step), 
                     img_real)
@@ -186,3 +185,4 @@ class GAN:
 
             sys.stdout.flush()
             sys.stderr.flush()
+

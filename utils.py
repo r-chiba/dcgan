@@ -72,24 +72,25 @@ def linear(input_, output_size, vs_name='Linear', sd=0.02, bias=True, bias_start
             else:
                 return tf.matmul(input_, w)
 
-filter_oc = [
-    [1, 4, 6, 4, 1],
-    [4, 16, 24, 16, 4],
-    [6, 24, 36, 24, 6],
-    [4, 16, 24, 16, 4],
-    [1, 4, 6, 4, 1],
-]
-filter_oc = np.array(filter_oc, dtype=np.float32)
-filter_oc /= 256.
-filter_oc = filter_oc.reshape((5, 5, 1, 1))
-filter = np.repeat(filter_oc, 3, axis=2)
-
 def blur(batch):
-    n_channel = batch.get_shape()[-1]
-    #filter = np.repeat(filter_oc, n_channel, axis=2)
-    #filter = np.asarray([filter_oc]*n_channel)
-    blured = tf.nn.depthwise_conv2d(batch,
-        filter if batch.get_shape().as_list()[-1] == 3 else filter_oc,
+    filter_oc = [
+        [1, 4, 6, 4, 1],
+        [4, 16, 24, 16, 4],
+        [6, 24, 36, 24, 6],
+        [4, 16, 24, 16, 4],
+        [1, 4, 6, 4, 1],
+    ]
+    filter_oc = np.array(filter_oc, dtype=np.float32)
+    filter_oc /= 256.
+    filter_oc = filter_oc.reshape((5, 5, 1, 1))
+    
+    n_channel = batch.get_shape().as_list()[-1]
+    if n_channel > 1:
+        filter_ = np.repeat(filter_oc, n_channel, axis=2)
+    else:
+        filter_ = filter_oc
+
+    blured = tf.nn.depthwise_conv2d(batch, filter_, 
         strides=[1, 1, 1, 1], padding='SAME')
     return blured
 
@@ -119,5 +120,5 @@ def laplacian_pyramid_loss(batch1, batch2, level):
     ret = 0.
     for i in xrange(level):
         ret += 2**(-2*(i+1)) * tf.reduce_mean(tf.abs(lp1[i] - lp2[i]))
-        #ret += 2**(-(i+1)) * tf.reduce_mean(tf.abs(lp1[i] - lp2[i]))
     return ret
+

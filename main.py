@@ -16,6 +16,7 @@ flags.DEFINE_string('dataset', 'mnist', 'path to dataset [mnist, cifar10, celeba
 flags.DEFINE_string('save_dir', 'save', 'directory to save image samples')
 flags.DEFINE_string('checkpoint_path', '', 'path to trained model')
 flags.DEFINE_string('pkl_path', '', 'path to pickled codes')
+flags.DEFINE_integer('gpu_list', '0', 'gpu numbers to use')
 flags.DEFINE_boolean('train', True, 'True for training, False for testing')
 
 FLAGS = flags.FLAGS
@@ -74,7 +75,7 @@ def main(argv):
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-    config.gpu_options.visible_device_list = "1"
+    config.gpu_options.visible_device_list = FLAGS.gpu_list
 
     with tf.Session(config=config) as sess:
         dcgan = GAN(sess, FLAGS)
