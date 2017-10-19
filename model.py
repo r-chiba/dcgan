@@ -97,8 +97,8 @@ class GAN:
             h3 = lrelu(h3)
 
             h4 = linear(tf.reshape(h3, [self.batch_size, -1]), 1, 'h4', with_w=False)
-            h4 = tf.nn.sigmoid(h4)
 
+            # return logits
             return h4
 
     def build_model(self):
